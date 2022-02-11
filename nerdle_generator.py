@@ -1,50 +1,74 @@
-zero_set = [0]
-number_set = [1,2,3,4,5,6,7,8,9]
+zero_set = ['0']
+number_set = ['1','2','3','4','5','6','7','8','9']
 equals_set = ['=']
 operator_set = ['+','-','*','/']
 
-character_set = zero_set + number_set + operator_set + equals_set
-character_set_wo_equals = zero_set + number_set + operator_set
-
-def should_skip_curr_char(prev_char, curr_char):
-    return prev_char in (operator_set + equals_set)\
-        and (
-            curr_char in (operator_set + equals_set)
-            or curr_char == 0
-        )
-
 f = open("nerdle.txt", "a")
-count = 0
 
-for c1 in number_set:
-    for c2 in character_set_wo_equals:
-        if c1 == 0 and c2 in number_set:
-            continue
-        for c3 in (number_set if ('=' in f"{c1}{c2}") else character_set):
-            if (should_skip_curr_char(c2, c3)):
-                continue
-            for c4 in (number_set if ('=' in f"{c1}{c2}{c3}") else character_set):
-                if (should_skip_curr_char(c3, c4)):
-                    continue
-                for c5 in (number_set if ('=' in f"{c1}{c2}{c3}{c4}") else character_set):
-                    if (should_skip_curr_char(c4, c5)):
-                        continue
-                    for c6 in (number_set if ('=' in f"{c1}{c2}{c3}{c4}{c5}") else character_set):
-                        if (should_skip_curr_char(c5, c6)):
-                            continue
-                        for c7 in (number_set if ('=' in f"{c1}{c2}{c3}{c4}{c5}{c6}") else character_set):
-                            if (should_skip_curr_char(c6, c7)):
-                                continue
-                            for c8 in number_set:
+def last_character_is_equals(curr_string):
+    return curr_string[-1] == '='
+
+def last_character_is_divider(curr_string):
+    return curr_string[-1] == '/'
+
+def last_character_is_operator(curr_string):
+    return curr_string[-1] in operator_set
+
+def last_character_is_starting_zero(curr_string):
+    return curr_string[-1] in zero_set and curr_string[-2] in operator_set
+
+def select_char_set(curr_string):
+    if len(curr_string) == 0:
+        return (zero_set + number_set)
+    elif len(curr_string) == 1:
+        if curr_string[-1] in zero_set: return operator_set
+        else: return (zero_set + number_set + operator_set)
+    elif len(curr_string) == 2:
+        if last_character_is_divider(curr_string): return number_set
+        elif last_character_is_operator(curr_string): return (zero_set + number_set)
+        else: return (zero_set + number_set + operator_set)
+    elif len(curr_string) == 3:
+        if last_character_is_divider(curr_string): return number_set
+        elif last_character_is_operator(curr_string): return (zero_set + number_set)
+        elif last_character_is_starting_zero(curr_string): return operator_set
+        else: return (zero_set + number_set + operator_set)
+    elif len(curr_string) == 4:
+        if last_character_is_divider(curr_string): return number_set
+        elif last_character_is_operator(curr_string): return (zero_set + number_set)
+        elif last_character_is_starting_zero(curr_string): return operator_set
+        else: return (zero_set + number_set + operator_set + equals_set)
+    elif len(curr_string) == 5:
+        if last_character_is_divider(curr_string): return number_set
+        elif last_character_is_operator(curr_string): return (zero_set + number_set)
+        elif last_character_is_equals(curr_string): return number_set
+        elif last_character_is_starting_zero(curr_string): return equals_set
+        else: return (zero_set + number_set + equals_set)
+    elif len(curr_string) == 6:
+        if last_character_is_equals(curr_string): return number_set
+        elif last_character_is_starting_zero(curr_string): return equals_set
+        else: return (zero_set + number_set + equals_set)
+    elif len(curr_string) == 7:
+        return (zero_set + number_set)
+    else:
+        return []
+
+for c1 in select_char_set(f""):
+    for c2 in select_char_set(f"{c1}"):
+        for c3 in select_char_set(f"{c1}{c2}"):
+            for c4 in select_char_set(f"{c1}{c2}{c3}"):
+                for c5 in select_char_set(f"{c1}{c2}{c3}{c4}"):
+                    for c6 in select_char_set(f"{c1}{c2}{c3}{c4}{c5}"):
+                        for c7 in select_char_set(f"{c1}{c2}{c3}{c4}{c5}{c6}"):
+                            for c8 in select_char_set(f"{c1}{c2}{c3}{c4}{c5}{c6}{c7}"):
                                 eq = f"{c1}{c2}{c3}{c4}{c5}{c6}{c7}{c8}"
                                 if eq.count('=') != 1:
                                     continue
 
                                 eq_split = eq.split('=', 1)
-                                if (eval(eq_split[0]) == int(eq_split[1])):
-                                    count += 1
+                                eq_str = eq_split[0]
+                                sum_str = eq_split[1]
+
+                                if (eval(eq_str) == int(sum_str)):
                                     f.write(eq + '\n')
-                                    if count % 100 == 0:
-                                        print(eq)
+                                    print(eq)
 f.close()
-print(count)
